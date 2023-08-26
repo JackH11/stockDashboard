@@ -4,8 +4,8 @@ import pandas as pd
 from utils import get_stock_data,get_connection
 
 
-def fetch_ROA_data():
-    ticker = 'GOOGL'
+def fetch_ROAs_data(ticker='GOOGL'):
+
     conn = get_connection()
     cashflow = get_stock_data(conn, 'cashflow_quarterly', [ticker])
 
@@ -18,11 +18,15 @@ def fetch_ROA_data():
 
     return cashflow
 
-def create_ROA_graph():
+def create_ROAs_graph():
 
-    ROA = dcc.Graph(
-        id='ROA-graph',
-        style={'width': '100%'}
-    )
 
-    return ROA
+    figures = []
+    for i in range(1, 5):
+        figure = dcc.Graph(
+            id=f'ROA-graph{i}',
+            style={'width': '100%', 'height': '100%'}
+        )
+        figures.append(figure)
+
+    return figures

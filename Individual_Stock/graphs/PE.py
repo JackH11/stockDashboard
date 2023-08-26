@@ -1,7 +1,7 @@
 from dash import dcc, html
 import pandas as pd
 
-from ..utils import get_data,get_connection
+from utils import get_stock_data,get_connection
 
 tickers = ['BA', 'GE', 'MMM', 'CAT']
 
@@ -54,11 +54,11 @@ PE = dcc.Graph(
 def fetch_PE_data():
     ticker = 'GOOGL'
     conn = get_connection()
-    all_eps = get_data(conn, 'earnings_report_quarterly', [ticker])
+    all_eps = get_stock_data(conn, 'earnings_report_quarterly', [ticker])
     all_eps['fiscal_date_ending'] = pd.to_datetime(all_eps['fiscal_date_ending'])
 
     conn = get_connection()
-    all_stocks = get_data(conn, 'stock_history_daily', [ticker])
+    all_stocks = get_stock_data(conn, 'stock_history_daily', [ticker])
 
     all_stocks = pd.merge(all_stocks, all_eps, left_on=['symbol', 'etimestamp'],right_on=['symbol', 'fiscal_date_ending'], how='inner')
     all_stocks['PE'] = all_stocks['eclose'] / all_stocks['reported_eps']

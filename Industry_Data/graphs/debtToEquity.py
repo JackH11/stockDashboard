@@ -3,9 +3,7 @@ import pandas as pd
 
 from utils import get_stock_data,get_connection
 
-def fetch_debtToEquity_data():
-
-    ticker = 'GOOGL'
+def fetch_debtToEquitys_data(ticker='GOOGL'):
 
     conn = get_connection()
     balance_sheet = get_stock_data(conn, 'balance_sheet_quarterly', [ticker])
@@ -17,9 +15,13 @@ def fetch_debtToEquity_data():
 
 def create_debtToEquity_graph():
 
-    debtToEquity = dcc.Graph(
-        id='debtToEquity-graph',
-        style={'width': '100%'}
-    )
 
-    return debtToEquity
+    figures = []
+    for i in range(1,5):
+        figure = dcc.Graph(
+            id=f'debtToEquity-graph{i}',
+            style={'width': '100%', 'height':'100%'}
+        )
+        figures.append(figure)
+
+    return figures
