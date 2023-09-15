@@ -4,11 +4,11 @@ import pandas as pd
 from utils import get_stock_data,get_connection
 
 
-def fetch_weekly_data():
-    ticker = 'TSLA'
+def fetch_weekly_data(ticker='GOOGL'):
     conn = get_connection()
 
     stock_data = get_stock_data(conn, 'stock_history_weekly', [ticker])
+    stock_data['etimestamp'] = pd.to_datetime(stock_data['etimestamp'])
 
     return stock_data
 

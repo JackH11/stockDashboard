@@ -17,7 +17,7 @@ def create_weekly_graph():
 
     weekly_stock_graph = dcc.Graph(
         id='mover-graph',
-        style={'padding': '15px'}
+        style={'margin-top': '150px'}
     )
 
     return weekly_stock_graph

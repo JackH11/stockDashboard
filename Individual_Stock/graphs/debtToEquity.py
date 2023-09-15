@@ -3,9 +3,7 @@ import pandas as pd
 
 from utils import get_stock_data,get_connection
 
-def fetch_debtToEquity_data():
-
-    ticker = 'GOOGL'
+def fetch_debtToEquity_data(ticker='GOOGL'):
 
     conn = get_connection()
     balance_sheet = get_stock_data(conn, 'balance_sheet_quarterly', [ticker])

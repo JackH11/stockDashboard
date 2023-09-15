@@ -22,6 +22,8 @@ from Industry_Data.layout import industry_layout
 
 from Market_Movements.layout import movements_layout
 
+from API.layout import api_layout
+
 
 
 PAPER_COLOR = '#1E1E24'
@@ -37,18 +39,20 @@ COLOR_FOUR = '#0d7cff'
 # Create the Plotly Dash app
 app = dash.Dash(__name__)
 
+
 # individual stock
 @app.callback(
     Output('earnings-graph', 'figure'),
     Input('interval', 'n_intervals'),
+    Input('dropdown','value'),
     Input('layout-toggle', 'data')
 )
-def update_earnings_graph(n_intervals,active_layout):
+def update_earnings_graph(n_intervals,ticker,active_layout):
 
-    if active_layout == 2:
+    if active_layout != 1:
         return dash.no_update
 
-    df = fetch_data()
+    df = fetch_data(ticker)
 
     figure = {
         'data': [{'x': df['fiscal_date_ending'],
@@ -67,7 +71,7 @@ def update_earnings_graph(n_intervals,active_layout):
                 },
             'xaxis': {
                 'title': {
-                    'text':'ROA',
+                    'text':'Fiscal End Date',
                     'font': {'color': 'white'}
                 },
                 'tickfont': {'color': 'white'},
@@ -77,7 +81,7 @@ def update_earnings_graph(n_intervals,active_layout):
             },
             'yaxis': {
                 'title': {
-                    'text':'ROA',
+                    'text':'',
                     'font': {'color': 'white'}
                 },
                 'tickfont': {'color': 'white'},
@@ -97,14 +101,15 @@ def update_earnings_graph(n_intervals,active_layout):
 @app.callback(
     Output('ROA-graph','figure'),
     Input('interval','n_intervals'),
+    Input('dropdown','value'),
     Input('layout-toggle', 'data')
 )
-def update_ROA_graph(n_intevals,active_layout):
+def update_ROA_graph(n_intervals,ticker,active_layout):
 
-    if active_layout == 2:
+    if active_layout != 1:
         return dash.no_update
 
-    df = fetch_ROA_data()
+    df = fetch_ROA_data(ticker)
 
     figure = {
         'data': [{'x': df['fiscal_date_ending'],
@@ -123,7 +128,7 @@ def update_ROA_graph(n_intevals,active_layout):
                 },
             'xaxis': {
                 'title': {
-                    'text':'ROA',
+                    'text':'Fiscal End Date',
                     'font': {'color': 'white'}
                 },
                 'tickfont': {'color': 'white'},
@@ -133,7 +138,7 @@ def update_ROA_graph(n_intevals,active_layout):
             },
             'yaxis': {
                 'title': {
-                    'text':'ROA',
+                    'text':'',
                     'font': {'color': 'white'}
                 },
                 'tickfont': {'color': 'white'},
@@ -152,14 +157,15 @@ def update_ROA_graph(n_intevals,active_layout):
 @app.callback(
     Output('PE-graph','figure'),
     Input('interval','n_intervals'),
+    Input('dropdown','value'),
     Input('layout-toggle', 'data')
 )
-def update_PE_graph(n_intervals, active_layout):
+def update_PE_graph(n_intervals,ticker, active_layout):
 
-    if active_layout == 2:
+    if active_layout != 1:
         return dash.no_update
 
-    df = fetch_PE_data()
+    df = fetch_PE_data(ticker)
 
     figure = {
         'data': [{'x': df['fiscal_date_ending'],
@@ -178,7 +184,7 @@ def update_PE_graph(n_intervals, active_layout):
                 },
             'xaxis': {
                 'title': {
-                    'text':'ROA',
+                    'text':'Fiscal End Date',
                     'font': {'color': 'white'}
                 },
                 'tickfont': {'color': 'white'},
@@ -188,7 +194,7 @@ def update_PE_graph(n_intervals, active_layout):
             },
             'yaxis': {
                 'title': {
-                    'text':'ROA',
+                    'text':'',
                     'font': {'color': 'white'}
                 },
                 'tickfont': {'color': 'white'},
@@ -207,14 +213,15 @@ def update_PE_graph(n_intervals, active_layout):
 @app.callback(
     Output('debtToEquity-graph','figure'),
     Input('interval','n_intervals'),
+    Input('dropdown','value'),
     Input('layout-toggle', 'data')
 )
-def update_debtToEquity_graph(n_intervals, active_layout):
+def update_debtToEquity_graph(n_intervals,ticker, active_layout):
 
-    if active_layout == 2:
+    if active_layout != 1:
         return dash.no_update
 
-    df = fetch_debtToEquity_data()
+    df = fetch_debtToEquity_data(ticker)
 
     figure = {
         'data': [{'x': df['fiscal_date_ending'],
@@ -242,7 +249,7 @@ def update_debtToEquity_graph(n_intervals, active_layout):
             },
             'yaxis': {
                 'title': {
-                    'text':'ROA',
+                    'text':'',
                     'font': {'color': 'white'}
                 },
                 'tickfont': {'color': 'white'},
@@ -259,15 +266,18 @@ def update_debtToEquity_graph(n_intervals, active_layout):
 # individual stock
 @app.callback(
     Output('weekly-stock-graph','figure'),
+    Output('ticker-header','children'),
+    Output('stock-price','children'),
     Input('interval','n_intervals'),
+    Input('dropdown','value'),
     Input('layout-toggle', 'data')
 )
-def update_weekly_graph(n_intervals, active_layout):
+def update_weekly_graph(n_intervals, ticker, active_layout):
 
-    if active_layout == 2:
-        return dash.no_update
+    if active_layout != 1:
+        return dash.no_update, dash.no_update, dash.no_update
 
-    df = fetch_weekly_data()
+    df = fetch_weekly_data(ticker)
 
     #df = adjust_stock_split(df)
 
@@ -297,7 +307,7 @@ def update_weekly_graph(n_intervals, active_layout):
             },
             'yaxis': {
                 'title': {
-                    'text':'ROA',
+                    'text':'',
                     'font': {'color': 'white'}
                 },
                 'tickfont': {'color': 'white'},
@@ -309,7 +319,16 @@ def update_weekly_graph(n_intervals, active_layout):
         }
     }
 
-    return figure
+    # Getting the most recent stock price
+    if (len(df) > 0):
+        latest_stock_index = df['etimestamp'].idxmax()
+        price = df.loc[latest_stock_index, 'eclose']
+    else:
+        price = ''
+
+    value = f"${price} Up 10.3%"
+
+    return figure, ticker, value
 
 # industry
 @app.callback(
@@ -320,7 +339,7 @@ def update_weekly_graph(n_intervals, active_layout):
 )
 def update_earnings_industry_graph(n_intervals, tickers, active_layout):
 
-    if active_layout == 1:
+    if active_layout != 2:
         return dash.no_update
 
     if tickers is None:
@@ -372,143 +391,125 @@ def update_earnings_industry_graph(n_intervals, tickers, active_layout):
 
 # industry
 @app.callback(
-    [Output('debtToEquity-graph1','figure'),
-     Output('debtToEquity-graph2','figure'),
-     Output('debtToEquity-graph3','figure'),
-     Output('debtToEquity-graph4','figure')],
+     Output('debtToEquity-subplot','figure'),
     [Input('interval','n_intervals'),
      Input('stock-dropdown', 'value'),
      Input('layout-toggle', 'data')]
 )
 def update_debtToEquitys_graph(n_intervals, tickers, active_layout):
 
-    if active_layout == 1:
+    if active_layout != 2:
         return dash.no_update
 
     if tickers is None:
         tickers = []
 
-    figures = []
+    fig = make_subplots(rows=1,cols=4,subplot_titles=tickers, shared_yaxes=True)
+
     for i in range(4):
 
         if i >= len(tickers):
             df = fetch_debtToEquitys_data('')
+            title = ''
         else:
             df = fetch_debtToEquitys_data(tickers[i])
+            title = tickers[i]
 
-        figure = {
-            'data': [{'x': df['fiscal_date_ending'],
-                      'y': df['debtToEquity'],
-                      'mode': 'markers', 'name': f'Estimated EPS - GOOGL',
-                      'marker': {
-                          'color': COLOR_FOUR,  # Set marker color to blue
-                          'size': 7,  # Set marker size
-                          'opacity': 0.7,
-                      }
-                      }],
-            'layout': {
-                'title': {
-                    'text': '',
-                    'font': {'color': 'white'}
-                },
-                'xaxis': {
-                    'title': {
-                        'text': '',
-                        'font': {'color': 'white'}
-                    },
-                    'tickfont': {'color': 'white'},
-                    'showgrid': False,
-                    'zeroline': False,
-                },
-                'yaxis': {
-                    'title': {
-                        'text': 'Debt to Equity' if i == 0 else '',
-                        'font': {'color': 'white'}
-                    },
-                    'tickfont': {'color': 'white'},
-                    'showgrid': False,
-                    'zeroline': False,
-                },
-                'plot_bgcolor': BACKGROUND_COLOR,  # Set the plot background color
-                'paper_bgcolor': PAPER_COLOR,
-                'margin': {'l': 50, 'r': 10, 't':60, 'b':40}
+
+        scatter = go.Scatter(
+            x=df['fiscal_date_ending'],
+            y=df['debtToEquity'],
+            mode='markers',
+            name=f'Estimated EPS - {title}',
+            marker={
+                'color': COLOR_TWO,
+                'size': 7,
+                'opacity': 0.7,
             }
-        }
+        )
 
-        figures.append(figure)
+        fig.add_trace(scatter, row=1, col=i + 1)
 
-    return figures
+        if i < len(tickers):
+            fig.layout.annotations[i].update(font=dict(color='white'))
+
+        fig.update_xaxes(title={'text':'','font': {'color': 'white'}}, showgrid=False, zeroline=False, tickfont=dict(color='white'), row=1, col=i + 1)
+        fig.update_yaxes(title={'text':'Debt to Equity' if i == 0 else '','font': {'color': 'white'}}, showgrid=False, zeroline=False, tickfont=dict(color='white'), row=1, col=i + 1)
+
+
+
+    fig.update_layout(
+        title=dict(text='Debt to Equity', x=0.5 , font=dict(color='white')),
+        showlegend=False,
+        plot_bgcolor=BACKGROUND_COLOR,
+        paper_bgcolor=PAPER_COLOR,
+        margin={'l': 50, 'r': 10, 't': 60, 'b': 40},
+    )
+
+    return fig
+
+
 
 # industry
 @app.callback(
-    [Output('ROA-graph1', 'figure'),
-     Output('ROA-graph2', 'figure'),
-     Output('ROA-graph3', 'figure'),
-     Output('ROA-graph4', 'figure')],
+    Output('roa-subplot', 'figure'),
     [Input('interval', 'n_intervals'),
      Input('stock-dropdown', 'value'),
      Input('layout-toggle', 'data')]
 )
-def update_stock_dropdown(n_intevals, tickers, active_layout):
+def update_stock_dropdown(n_intervals, tickers, active_layout):
 
-    if active_layout == 1:
+
+    if active_layout != 2:
         return dash.no_update
 
     if tickers is None:
         tickers = []
 
-    figures = []
+    fig = make_subplots(rows=1,cols=4,subplot_titles=tickers, shared_yaxes=True)
+
     for i in range(4):
 
         if i >= len(tickers):
             df = fetch_ROAs_data('')
+            title = ''
         else:
             df = fetch_ROAs_data(tickers[i])
+            title = tickers[i]
 
-        figure = {
-            'data': [{'x': df['fiscal_date_ending'],
-                     'y': df['ROA'],
-                     'mode': 'markers', 'name': f'Estimated EPS - GOOGL',
-                     'marker': {
-                          'color': COLOR_TWO,  # Set marker color to blue
-                          'size': 7,  # Set marker size
-                          'opacity': 0.7,
-                      }
-                      }],
-            'layout': {
-                'title': {
-                        'text': '',
-                        'font': {'color': 'white'}
-                    },
-                'xaxis': {
-                    'title': {
-                        'text':'Fiscal End Date',
-                        'font': {'color': 'white'}
-                    },
-                    'tickfont': {'color': 'white'},
-                    'showgrid':False,
-                    'zeroline': False,
 
-                },
-                'yaxis': {
-                    'title': {
-                        'text': 'ROA' if i == 0 else '',
-                        'font': {'color': 'white'}
-                    },
-                    'tickfont': {'color': 'white'},
-                    'showgrid':False,
-                    'zeroline': False,
-
-                },
-                'plot_bgcolor': BACKGROUND_COLOR,  # Set the plot background color
-                'paper_bgcolor': PAPER_COLOR,
-                'margin': {'l': 50, 'r': 10, 't':60, 'b':40}
+        scatter = go.Scatter(
+            x=df['fiscal_date_ending'],
+            y=df['ROA'],
+            mode='markers',
+            name=f'Estimated EPS - {title}',
+            marker={
+                'color': COLOR_THREE,
+                'size': 7,
+                'opacity': 0.7,
             }
-        }
+        )
 
-        figures.append(figure)
+        fig.add_trace(scatter, row=1, col=i + 1)
 
-    return figures
+        if i < len(tickers):
+            fig.layout.annotations[i].update(font=dict(color='white'))
+
+        fig.update_xaxes(title={'text':'Fiscal End Date','font': {'color': 'white'}}, showgrid=False, zeroline=False, tickfont=dict(color='white'), row=1, col=i + 1)
+        fig.update_yaxes(title={'text':'ROA' if i == 0 else '','font': {'color': 'white'}}, showgrid=False, zeroline=False, tickfont=dict(color='white'), row=1, col=i + 1)
+
+
+
+    fig.update_layout(
+        title=dict(text='Return on Assets', x=0.5 , font=dict(color='white')),
+        showlegend=False,
+        plot_bgcolor=BACKGROUND_COLOR,
+        paper_bgcolor=PAPER_COLOR,
+        margin={'l': 50, 'r': 10, 't': 60, 'b': 40},
+    )
+
+    return fig
+
 
 # industry
 @app.callback(
@@ -518,7 +519,7 @@ def update_stock_dropdown(n_intevals, tickers, active_layout):
 )
 def update_industry_dropdown(industry,active_layout):
 
-    if active_layout == 1:
+    if active_layout != 2:
         return dash.no_update
 
 
@@ -535,9 +536,10 @@ def update_industry_dropdown(industry,active_layout):
     Input('toggle-button', 'n_clicks'),
     Input('toggle-button2', 'n_clicks'),
     Input('toggle-button3', 'n_clicks'),
+    Input('toggle-button4', 'n_clicks'),
     Input('layout-toggle', 'data')
 )
-def toggle_layout(toggle_individual, toggle_industry, toggle_movers, active_layout):
+def toggle_layout(toggle_individual, toggle_industry, toggle_movers, toggle_api, active_layout):
 
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
 
@@ -548,6 +550,8 @@ def toggle_layout(toggle_individual, toggle_industry, toggle_movers, active_layo
         return industry_layout, 2
     elif changed_id == 'toggle-button3.n_clicks' and active_layout != 3:
         return movements_layout, 3
+    elif changed_id == 'toggle-button4.n_clicks' and active_layout != 4:
+        return api_layout, 4
 
 
     return dash.no_update, dash.no_update
@@ -559,13 +563,12 @@ def toggle_layout(toggle_individual, toggle_industry, toggle_movers, active_layo
      Input('mover-dropdown', 'value'),
      Input('layout-toggle', 'data')]
 )
-def update_mover_dropdown(n_intevals, tickers, active_layout):
+def update_mover_dropdown(n_intervals, ticker, active_layout):
 
-
-    if active_layout == 2:
+    if active_layout != 3:
         return dash.no_update
 
-    df = fetch_weekly_data()
+    df = fetch_weekly_data(ticker)
 
     # df = adjust_stock_split(df)
 
@@ -581,7 +584,7 @@ def update_mover_dropdown(n_intevals, tickers, active_layout):
                   }],
         'layout': {
             'title': {
-                'text': 'Debt to Equity',
+                'text': 'Weekly Stock Price',
                 'font': {'color': 'white'}
             },
             'xaxis': {
@@ -618,9 +621,10 @@ app.layout = html.Div(children=[
     dcc.Store(id='layout-toggle', data=1),
     dcc.Interval(id='interval',interval=5000, n_intervals=0),
     html.Div(children=[
-        html.Button("Individual Stock", id="toggle-button",style={'width':'33.33%','height':'30px','border-radius':'0px','border-width':'0 1px 0 0'}),
-        html.Button("Industry", id="toggle-button2",style={'width':'33.33%','height':'30px','border-radius':'0px','border-width':'0 1px 0 1px'}),
-        html.Button("Large Movements", id="toggle-button3",style={'width':'33.33%','height':'30px','border-radius':'0px','border-width':'0 0 0 1px'}),
+        html.Button("Individual Stock", id="toggle-button",style={'width':'25%','height':'30px','border-radius':'0px','border-width':'0 1px 0 0'}),
+        html.Button("Industry", id="toggle-button2",style={'width':'25%','height':'30px','border-radius':'0px','border-width':'0 1px 0 1px'}),
+        html.Button("Large Movements", id="toggle-button3",style={'width':'25%','height':'30px','border-radius':'0px','border-width':'0 1px 0 1px'}),
+        html.Button("API Calls", id="toggle-button4",style={'width':'25%','height':'30px','border-radius':'0px','border-width':'0 0 0 1px'}),
     ],style={'display':'flex'}),
     html.Div(id='dynamic-layout')
     ],

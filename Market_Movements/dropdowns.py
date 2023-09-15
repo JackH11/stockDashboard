@@ -16,4 +16,4 @@ def create_stock_dropdown():
     options = [{'label':symbol, 'value':symbol} for symbol in symbols]
 
 
-    return dcc.Dropdown(options, id='mover-dropdown', maxHeight=300, multi=True, style={'width':'90%', 'maxWidth':'90%', 'display':'inline-block'})
+    return dcc.Dropdown(options, id='mover-dropdown', maxHeight=300, style={'width':'90%', 'maxWidth':'90%', 'display':'inline-block'})

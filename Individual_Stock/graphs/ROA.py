@@ -4,8 +4,8 @@ import pandas as pd
 from utils import get_stock_data,get_connection
 
 
-def fetch_ROA_data():
-    ticker = 'GOOGL'
+def fetch_ROA_data(ticker='GOOGL'):
+
     conn = get_connection()
     cashflow = get_stock_data(conn, 'cashflow_quarterly', [ticker])
 

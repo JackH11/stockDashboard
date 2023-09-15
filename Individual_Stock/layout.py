@@ -23,16 +23,16 @@ individual_layout = html.Div(children=[
                 html.Div(children=[
                     html.Div(children=[
                         html.Div(
-                            html.H1("Apple", style={'text-align':'left','margin':'0px','color':'white'}),
+                            html.H1("Apple",id='stock-header', style={'text-align':'left','margin':'0px','color':'white'}),
                             style={'width':'100%'}
                         ),
                         html.Div(
-                            html.H3("AAPL", style={'text-align':'left','margin':'0px','color':'white'}),
+                            html.H3("AAPL",id='ticker-header', style={'text-align':'left','margin':'0px','color':'white'}),
                             style={'width':'100%'}
                         ),
                     ],style={'margin-right':'auto', 'margin-left':'10px'}),
                     html.Div(
-                        html.H3("$187.46 Up 10.3%"),
+                        html.H3("$187.46 Up 10.3%",id='stock-price'),
                         style={'margin-left':'auto','color':'white'}
                     )
                 ],style={'display':'flex'}),
@@ -42,7 +42,7 @@ individual_layout = html.Div(children=[
                 ,style={'margin-top':'20px'}),
                 html.Div(
                 create_stock_dropdown()
-                ,style={'width':'30%','align-items':'center','display':'inline-block','margin-top':'20px'}),
+                ,style={'width':'300px','align-items':'center','display':'inline-block','margin-top':'20px'}),
             ],style={'text-align': 'center', 'maxWidth':'100%', 'margin-top':'25px'}),
         ],style={'width':'50%','background':BACKGROUND_COLOR,'text-align': 'center', 'maxWidth':'50%', 'height':'100%'}),
         html.Div(children=[

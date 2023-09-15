@@ -36,15 +36,3 @@ def create_earnings_graph():
     )
     figure = dcc.Graph(id='earnings-subplot',style={'width': '100%', 'height':'100%'})
     return figure
-
-    """
-    figures = []
-    for i in range(1,5):
-        figure = dcc.Graph(
-            id=f'earnings-graph{i}',
-            style={'width': '100%', 'height':'100%'}
-        )
-        figures.append(figure)
-    """
-
-    return figures
