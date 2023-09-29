@@ -1,15 +1,18 @@
+import asyncio
+
 import dash
 from dash import dcc, html, Input, Output, State
 import pandas as pd
 import plotly.express as px
+import time
 
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
-from utils import fetch_columns, get_connection
+from utils import fetch_columns, get_connection, add_symbol
 
 from Individual_Stock.layout import individual_layout
-from Individual_Stock.graphs.earningsPerShare import fetch_data
+from Individual_Stock.graphs.earningsPerShare import fetch_individual_earnings_data
 from Individual_Stock.graphs.ROA import fetch_ROA_data
 from Individual_Stock.graphs.PE import fetch_PE_data
 from Individual_Stock.graphs.debtToEquity import fetch_debtToEquity_data
@@ -23,7 +26,13 @@ from Industry_Data.layout import industry_layout
 from Market_Movements.layout import movements_layout
 
 from API.layout import api_layout
-
+from API.fetch_data.fetch_cashflow import fetch_cashflow
+from API.fetch_data.fetch_earnings import fetch_earnings
+from API.fetch_data.fetch_weekly_stock import fetch_weekly_stock
+from API.fetch_data.fetch_balance_sheet import fetch_balance_sheet
+from API.fetch_data.fetch_income_statement import fetch_income_statement
+from API.fetch_data.fetch_daily_stock import fetch_daily_stock
+from API.fetch_data.fetch_all_data import fetch_all_data_api, fetch_to_update_data, update_specific_table
 
 
 PAPER_COLOR = '#1E1E24'
@@ -52,7 +61,7 @@ def update_earnings_graph(n_intervals,ticker,active_layout):
     if active_layout != 1:
         return dash.no_update
 
-    df = fetch_data(ticker)
+    df = fetch_individual_earnings_data(ticker)
 
     figure = {
         'data': [{'x': df['fiscal_date_ending'],
@@ -613,6 +622,149 @@ def update_mover_dropdown(n_intervals, ticker, active_layout):
     return figure
 
 
+log_messages = []
+async def asynchronous_task(tickers,new=False):
+
+
+    # Iterate through tickers
+        # call the "fetch cashflow function"
+        # Log the result in the log messages
+        # Sleep for 14 seconds
+
+        # call the
+
+    conn = get_connection()
+
+    for ticker in tickers:
+
+        if new:
+            result = add_symbol(conn, ticker)
+            log_messages.append(result)
+
+
+        # cashflow
+        result = fetch_cashflow(conn, ticker)
+        log_messages.append(result)
+        await asyncio.sleep(14)
+
+        # income_statement
+        result = fetch_income_statement(conn, ticker)
+        log_messages.append(result)
+        await asyncio.sleep(14)
+
+        # balance_sheet
+        result = fetch_balance_sheet(conn, ticker)
+        log_messages.append(result)
+        await asyncio.sleep(14)
+
+        # earnings
+        result = fetch_earnings(conn, ticker)
+        log_messages.append(result)
+        await asyncio.sleep(14)
+
+        # weekly stock data
+        result = fetch_weekly_stock(conn, ticker)
+        log_messages.append(result)
+        await asyncio.sleep(14)
+
+
+        # daily stock data
+        result = fetch_daily_stock(conn, ticker)
+        log_messages.append(result)
+        await asyncio.sleep(14)
+
+
+    conn.close()
+
+
+async def fetch_all_data_async(conn):
+
+
+    df = fetch_to_update_data(conn)
+
+    for index, row in df.iterrows():
+
+        result = update_specific_table(conn,row)
+        log_messages.append(result)
+        await asyncio.sleep(14)
+
+    conn.close()
+
+
+@app.callback(
+    Output('dummy-output1','children'),
+    [Input('fetch-industry-data','n_clicks'),
+     Input('api-industry-dropdown','value'),
+     Input('api-stock-dropdown','value'),
+     Input('api-fetch-stock-data','n_clicks')]
+)
+def fetch_data(toggle_industry,industry,stock,toggle_stock):
+
+    conn = get_connection()
+    df = fetch_columns(conn, 'industries', ['symbol'], f"WHERE industry = '{industry}'")
+    tickers = list(df['symbol'])
+
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+
+    if changed_id == 'fetch-industry-data.n_clicks':
+        asyncio.run(asynchronous_task(tickers))
+    elif changed_id == 'api-fetch-stock-data.n_clicks':
+        asyncio.run(asynchronous_task([stock]))
+
+@app.callback(
+    Output('fetch-output','children'),
+    [Input('log-update-interval','n_intervals')]
+)
+def display_log_messages(n_intervals):
+
+    if not log_messages:
+        return "No logs found"
+
+    logs = []
+
+    for message in log_messages:
+        logs.append(html.Div(message))
+        logs.append(html.Br())
+
+    return logs
+
+@app.callback(
+    Output('dummy-output2','children'),
+    State('api-new-text','value'),
+    Input('api-fetch-new-data','n_clicks')
+)
+def call_new_value(value,n_clicks):
+
+
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+
+
+    if changed_id == 'api-fetch-new-data.n_clicks':
+
+        asyncio.run(asynchronous_task([value],new=True))
+
+@app.callback(
+    Output('dummy-output3','children'),
+    Input('api-fetch-all-data','n_clicks')
+)
+def fetch_all_data(n_clicks):
+
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+
+
+
+
+    if changed_id == 'api-fetch-all-data.n_clicks':
+
+        conn = get_connection()
+        #asyncio.run(fetch_all_data_api(conn))
+        asyncio.run(fetch_all_data_async(conn))
+
+
+
+
+
+
 
 
 # Create the layout for the dashboard
@@ -620,6 +772,7 @@ app.layout = html.Div(children=[
     html.Link(href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css', rel='stylesheet'),
     dcc.Store(id='layout-toggle', data=1),
     dcc.Interval(id='interval',interval=5000, n_intervals=0),
+    dcc.Interval(id='log-update-interval',interval=2000),
     html.Div(children=[
         html.Button("Individual Stock", id="toggle-button",style={'width':'25%','height':'30px','border-radius':'0px','border-width':'0 1px 0 0'}),
         html.Button("Industry", id="toggle-button2",style={'width':'25%','height':'30px','border-radius':'0px','border-width':'0 1px 0 1px'}),

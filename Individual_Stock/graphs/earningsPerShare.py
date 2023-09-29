@@ -4,7 +4,7 @@ import pandas as pd
 from utils import get_stock_data,get_connection
 
 
-def fetch_data(ticker='GOOGL'):
+def fetch_individual_earnings_data(ticker='GOOGL'):
 
     conn = get_connection()
     df = get_stock_data(conn, 'earnings_report_quarterly', [ticker])
