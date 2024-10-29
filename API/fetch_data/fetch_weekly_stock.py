@@ -17,7 +17,7 @@ def fetch_weekly_stock(conn, ticker):
     params = {
         "function": "TIME_SERIES_WEEKLY",
         "symbol": ticker,
-        "apikey": "SYFIFCQ6K4QYHX7J",
+        "apikey": "",
         "outputsize": "full",
 
     }
