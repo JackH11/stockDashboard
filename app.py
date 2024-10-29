@@ -7,7 +7,7 @@ def get_connection():
         port='5432',
         database='exchangedata',
         user='postgres',
-        password='begin1'
+        password=''
 
     )
 
