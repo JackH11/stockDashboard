@@ -43,7 +43,7 @@ def fetch_income_statement(conn, ticker):
     params = {
         "function": "INCOME_STATEMENT",
         "symbol": ticker,
-        "apikey": "SYFIFCQ6K4QYHX7J",
+        "apikey": "",
         "outputsize": "full"
     }
 
