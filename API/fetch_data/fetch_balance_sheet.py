@@ -56,7 +56,7 @@ def fetch_balance_sheet(conn, ticker):
     params = {
         "function": "BALANCE_SHEET",
         "symbol": ticker,
-        "apikey": "SYFIFCQ6K4QYHX7J",
+        "apikey": "",
         "outputsize": "full"
     }
 
