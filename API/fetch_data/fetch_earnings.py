@@ -17,7 +17,7 @@ def fetch_earnings(conn ,ticker):
     params = {
         "function": "EARNINGS",
         "symbol": ticker,
-        "apikey": "SYFIFCQ6K4QYHX7J",
+        "apikey": "",
         "outputsize": "full"
     }
 
