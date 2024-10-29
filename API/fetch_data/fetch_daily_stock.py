@@ -17,7 +17,7 @@ def fetch_daily_stock(conn, ticker):
     params = {
         "function": "TIME_SERIES_DAILY",
         "symbol": ticker,
-        "apikey": "SYFIFCQ6K4QYHX7J",
+        "apikey": "",
         "outputsize": "full",
 
     }
