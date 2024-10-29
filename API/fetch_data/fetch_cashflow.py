@@ -34,7 +34,7 @@ def fetch_cashflow(conn,ticker):
     params = {
         "function": "CASH_FLOW",
         "symbol": ticker,
-        "apikey": "SYFIFCQ6K4QYHX7J",
+        "apikey": "",
         "outputsize": "full"
     }
 
